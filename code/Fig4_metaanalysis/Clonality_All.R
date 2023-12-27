@@ -7,7 +7,7 @@ library(data.table)
 library(dplyr)
 
 dir.input <- "tmp/data/original/raw.data"
-dir.output <- "tmp/result/Fig5"
+dir.output <- "tmp/result/Fig4"
 
 cores <- 24
 

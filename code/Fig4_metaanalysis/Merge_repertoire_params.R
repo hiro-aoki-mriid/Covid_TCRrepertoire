@@ -1,6 +1,6 @@
 ##Merge repertoire parameters based on correlation heatmap
 
-# パッケージの読み込み
+#load packages
 library(ComplexHeatmap)
 library(circlize)
 library(stringr)
@@ -8,7 +8,7 @@ library(dplyr)
 library(qvalue)
 library(data.table)
 
-#Fontの導入
+#load Fonts
 library(extrafont)
 loadfonts("win")
 
@@ -16,7 +16,7 @@ loadfonts("win")
 Cells <- c("CD4", "CD8")
 
 dir.input <- "tmp/metadata"
-dir.output <- "tmp/result/Fig5"
+dir.output <- "tmp/result/Fig4"
 
 ################### Define functions ######################
 tableread_fast = function(i, header=TRUE, sep="\t"){
@@ -38,11 +38,11 @@ merge <- tableread_fast(name.input, header = TRUE, sep=",")
 
 for(cell in Cells){
   #load data
-  name.input <- str_c(dir.input, "Metaanalysis_", sep = "/") %>% str_c(cell, "_clonality.txt") 
+  name.input <- str_c(dir.input, "Metaanalysis_", sep = "/") %>% str_c(cell, ".txt") 
   d <- read.table(name.input, header = TRUE)
   
   #Normalization
-  #Spearman coefficientを使用 → パラメタごとにrankを計算し、その平均を取る
+  #Use Spearman coefficient -> averaging the rank of parameters in each clusterる
   d_rank <- createEmptyDf(nrow(d), ncol(d), colnames = names(d))
   for(i in 1:ncol(d)){
     d_rank[,i] <- rank(d[,i])

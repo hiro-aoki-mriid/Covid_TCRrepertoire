@@ -9,12 +9,12 @@ library(dplyr)
 library(data.table)
 
 #Input layer
-dir.input <- "tmp/result/intermediate/2_AIM/JoinTP_DifAbund_AIM"
+dir.input <- "tmp/result/intermediate/1_beta-binomial/JoinTP_DifAbund"
 dir.Tet <- "tmp/data/original/raw.data"
-dir.output <- "tmp/result/intermediate/6_Tet/JoinTP_DifAbund_AIM_Tet"
+dir.output <- "tmp/result/intermediate/5_Tet/JoinTP_DifAbund_Tet"
 cores <- 12
 
-epitope_array <- c("NF9", "QI9")
+epitope_array <- c("S269", "S448", "S919", "S1208")
 point_array <- c("TP2", "TP3", "TP8")
 points_all <- c("TP1", "TP2", "TP3", "TP4", "TP5", "TP6", "TP8", "TP9", "TP10", "TP11")
 threshold <- 16 #Threshold of Tetposi/total ratio for Tet+ clones
@@ -26,20 +26,26 @@ tableread_fast = function(i, header=TRUE, quote="", sep="\t"){
   tmp = as.data.frame(tmp)
   return(tmp)
 }
+createEmptyDf = function( nrow, ncol, colnames = c() ){
+  data.frame( matrix( vector(), nrow, ncol, dimnames = list( c(), colnames ) ) )
+}
 
-##Combine beta-binomial result and AIM information
-Combine <- function(file.name, extract, dir.AIM, dir.input){ 
+##Combine beta-binomial result and Tetramer information
+Combine <- function(file.name, extract, dir.Tet, dir.input){ 
   #load data
   name.input <- str_c(dir.input, file.name, sep = "/")
   data <- tableread_fast(name.input, header = TRUE, quote="\"", sep=",")
   
   #Search data
   name.input <- str_remove(file.name, "NaraCOVID_CD8_") %>%
-    str_remove(".DifAbund.aim.csv")
+    str_remove(".DifAbund.csv")
   
   #Check whether tetramer test is performed or not
     for(epitope in epitope_array){
+      tet_res <- createEmptyDf(nrow(data), length(point_array), colnames = point_array)
+      i <- 0
       for(point in point_array){
+        i <- i+1
         query <- str_c(epitope, point, sep = "_")
         search.input <- str_c(dir.Tet, "COVIDTet", sep = "/") %>%
           str_c(query, "CD8", name.input, sep = "_") %>% 
@@ -63,33 +69,40 @@ Combine <- function(file.name, extract, dir.AIM, dir.input){
           data_sub$class <- "Nega"
           names(data_sub) <- c("total", "freq.Tet", "class")
           data_sub$class[which((data_sub$freq.Tet + 1/100000/2) / (data_sub$total + 1/100000/2) > threshold)] <- "Posi"
-          #Return thresholding results
-          data$class.tet <- data_sub$class
+          #Restore thresholding results
+          tet_res[,i] <- data_sub$class
           data <- dplyr::select(data, -c("freq.Tet"))
-          names(data) <- c(names(data)[1:(ncol(data)-1)], query)
         } else {
-          data$class.Tet <- "Nega"
-          names(data) <- c(names(data)[1:(ncol(data)-1)], query)
+          tet_res[,i] <- "Nega"
         }
       }
+      #Deterine tetramer positivity
+      data$tetramer <- "Nega"
+      data$tetramer[which(tet_res$TP2 == "Posi" | tet_res$TP3 == "Posi" | tet_res$TP8 == "Posi")] <- "Posi"
+      names(data) <- c(names(data)[1:(ncol(data)-1)], epitope)
     }
-    
-    #Deterine NF9/QI9 positivity
-    data$NF9 <- "Nega"
-    data$NF9[which(data$NF9_TP2 == "Posi" | data$NF9_TP3 == "Posi" | data$NF9_TP8 == "Posi")] <- "Posi"
-    data$QI9 <- "Nega"
-    data$QI9[which(data$QI9_TP2 == "Posi" | data$QI9_TP3 == "Posi" | data$QI9_TP8 == "Posi")] <- "Posi"
-    data$tetramer <- "Nega"
-    data$tetramer[which(data$NF9 == "Posi")] <- "NF9"
-    data$tetramer[which(data$QI9 == "Posi")] <- "QI9"
-    data$tetramer[which(data$NF9 == "Posi" & data$QI9 == "Posi")] <- "Dual"
-    
-    #Output 
-    name.output <- str_c(dir.output, file.name, sep = "/") %>% str_replace("csv", "tetramer.csv")
-    write.csv(data, name.output, row.names = FALSE)
+  
+  #Define clones detected in Tetramer-TCRseq data
+  tet.finder <- function(x){
+    i <- 0
+    out <- "Nega"
+    while(i < length(x)){
+      i <- i+1
+      if(x[i] == "Posi"){
+        out <- "Posi"
+        break
+      }
+    }
+    return(out)
+  }
+  data$tetramer <- apply(dplyr::select(data, epitope_array), 1, tet.finder)
+  
+  #Output 
+  name.output <- str_c(dir.output, file.name, sep = "/") %>% str_replace("csv", "tetramer.csv")
+  write.csv(data, name.output, row.names = FALSE)
 }
 
-###Main module
+#################################### Main module ####################################################
 dir.create(dir.output, recursive = TRUE)
 files  <- list.files(dir.input, pattern="NaraCOVID_CD8")
 
@@ -99,7 +112,7 @@ cl <- makeCluster(cores)
 registerDoParallel(cl)   
 foreach(file.name = files,
                .packages=c("data.table", "stringr", "dplyr", "ggplot2"),
-               .combine = rbind) %dopar% {Combine(file.name, extract, dir.AIM, dir.input)}
+               .combine = rbind) %dopar% {Combine(file.name, extract, dir.Tet, dir.input)}
 stopCluster(cl)
 proc.time()-t
 

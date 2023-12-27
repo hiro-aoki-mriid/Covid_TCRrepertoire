@@ -12,10 +12,10 @@ library(dplyr)
 library(data.table)
 
 #Input layer
-name.output <- "tmp/result/Fig1/responder_clones.csv"
+name.output <- "tmp/result/Fig1/1E.responder_clones.csv"
 dir.input <- "tmp/result/intermediate/1_beta-binomial/JoinTP_DifAbund"
 cores <- 12
-patterns <- c("2nd", "1st", "3rd", "Dual")
+patterns <- c("Early", "Main", "Late", "Third")
 
 #################################### Processing layer ####################################################
 ###Define functions

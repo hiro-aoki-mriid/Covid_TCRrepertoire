@@ -11,7 +11,7 @@ library(stringr)
 library(data.table)
 
 #Input layer
-dir.original <- "tmp/data/original/raw.data"
+dir.original <- "tmp/result/Fig6"
 dir.input <- "tmp/data/public/Public.Clone.Input"
 dir.output <- "tmp/result/intermediate/7_tcrdist/Input.tcrdist3"
 ###VDJdb
@@ -21,9 +21,7 @@ name2 <- "tcell_receptor_table_export_1678716394.csv"
 name.HLA <- "tmp/metadata/epitope_HLA_list.csv"
 cores <- 12
 
-######################################################################
-#Create directory
-dir.create(dir.output, recursive = TRUE)
+############################### Define functions ########################################
 #define function
 tableread_fast = function(i, header=TRUE, quote="", sep="\t"){
   tmp = fread(i, header=header, sep=sep, quote=quote, nThread=32)
@@ -35,13 +33,15 @@ createEmptyDf = function( nrow, ncol, colnames = c() ){
   data.frame( matrix( vector(), nrow, ncol, dimnames = list( c(), colnames ) ) )
 }
 
-
+############################### Processing ########################################
+#Create directory
+dir.create(dir.output, recursive = TRUE)
 ###For vdjdb dataset
 #Download and loaddata
 #wget(c("https://raw.githubusercontent.com/pogorely/COVID_vax_CD8/master/cd8_only_dextr_rev_clean.tsv"))
 d1 <- tableread_fast(str_c(dir.input, name1,sep = "/"), header = TRUE, quote="\"", sep="\t")
 
-###For vdjdb input data
+#####  For vdjdb input data  #####
 #Extract columns used for tcrdist3 analysis
 d1_sub <- str_split(d1$Meta, pattern = "subject.id", simplify = TRUE)
 d1_sub <- str_split(d1_sub[,2], pattern = ",", simplify = TRUE)
@@ -70,7 +70,8 @@ for(i in 1:nrow(d_HLA)){
     d <- rbind(d, d1_sub2)
   }
 }
-d$Epitope <- str_c("vdjdb_", d$Epitope)
+
+d$Epitope <- str_c("vdjdb_", lapply(d$Epitope, function(x) {as.vector(d_HLA$Name[match(x, d_HLA$Epitope)])}))
 
 ##Generate HLA-epitope combination
 d$EpiHLA <- str_c(d$MHC, d$Epitope, d$Epitope.gene, d$Epitope.species, sep = "+")
@@ -85,7 +86,7 @@ for(i in list_epitopes){
   write.csv(d_sub, name_output, row.names = FALSE)
 }
 
-###For IEDB dataset
+#####  For IEDB dataset  #####
 #Download and loaddata
 d1 <- tableread_fast(str_c(dir.input, name2,sep = "/"), header = TRUE, quote="\"", sep=",")
 
@@ -131,7 +132,7 @@ for(i in 1:nrow(d_HLA)){
     d <- rbind(d, d1_sub2)
   }
 }
-d$Epitope <- str_c("IEDB_", d$Epitope)
+d$Epitope <- str_c("IEDB_", lapply(d$Epitope, function(x) {as.vector(d_HLA$Name[match(x, d_HLA$Epitope)])}))
 
 ##Generate HLA-epitope combination
 d$EpiHLA <- str_c(d$MHC, d$Epitope, d$Epitope.gene, d$Epitope.species, sep = "+")
@@ -148,44 +149,25 @@ for(i in list_epitopes){
   write.csv(d_sub, name_output, row.names = FALSE)
 }
 
-###For our original dataset
-#Main function
-Main <- function(file.name, dir.original, dir.output){
-  ##load data
-  name.input <- str_c(dir.original, file.name, sep = "/")
-  d <- tableread_fast(name.input, header = TRUE, quote="\"", sep="\t")
-  names <- str_split(file.name, pattern = "_", simplify = TRUE)
-  d$sample <- names[5]
+#####  For our original dataset  #####
+files <- list.files(dir.original, "table.csv")
+
+for(file.name in files){
+  #load tetramer specific clones
+  d <- read.csv(str_c(dir.original, file.name, sep = "/"), header = TRUE)
+  d$sample <- str_remove(d$sample, "NaraCOVID_CD8_") %>% str_remove("_TCR.DifAbund.tetramer.csv")
+  #Call epitope information
+  epitope <- str_split(file.name, pattern = "_", simplify = TRUE)[1]
+  MHC <- d_HLA$HLA[match(epitope, d_HLA$Name)]
+  EpiHLA <- str_c(MHC, str_c("Tet_", epitope), "Spike", "SARS-CoV-2", sep = "+")
+  #change data format
   d$cell_type <- "PBMC"
-  
-  ##change data format
-  d_sub <- select(d, c("sample", "cell_type", "v", "j", "cdr3aa"))
-  names(d_sub) <- c("subject", "cell_type", "v_b_gene", "j_b_gene", "cdr3_b_aa")
-  d_sub$v_b_gene <- str_c(d_sub$v_b_gene, "*01")
-  d_sub$j_b_gene <- str_c(d_sub$j_b_gene, "*01")
-  
-  return(d_sub)
-}
-
-epitopes <- c("Tet_NF9", "Tet_QI9")
-
-for(epitope in epitopes){
-  #For NF9 sepcific clones
-  files  <- list.files(dir.original, pattern=epitope)
-  cl <- makeCluster(cores)
-  registerDoParallel(cl)   
-  d <- foreach(file.name = files, .combine = rbind,
-               .packages=c("ggplot2", "extrafont", "stringr", "dplyr", "data.table")) %dopar% {Main(file.name, dir.original, dir.output)}
-  stopCluster(cl)
-  d$MHC <- "A24-02"
-  d$Epitope <- epitope
-  d$Epitope.gene <- "Spike"
-  d$Epitope.species <- "SARS-CoV-2"
-  
-  EpiHLA <- str_c("A24-02", epitope, "Spike", "SARS-CoV-2", sep = "+")
-  
+  d$v <- str_c(d$v, "*01")
+  d$j <- str_c(d$j, "*01")
+    
   #Extract cells matching epitope specificity
-  d_sub <- dplyr::select(d, -c("MHC", "Epitope", "Epitope.gene", "Epitope.species"))
+  d_sub <- dplyr::select(d, c("sample", "cell_type", "v", "j", "cdr3aa"))
+  names(d_sub) <- c("subject", "cell_type", "v_b_gene", "j_b_gene", "cdr3_b_aa")
   
   #Output
   name_output <- str_c(dir.output, EpiHLA, sep = "/") %>% str_c("tcrdist3.csv", sep = ".")

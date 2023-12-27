@@ -10,11 +10,6 @@ dir.binomial <- "tmp/result/intermediate/1_beta-binomial/binomial_test"
 dir.repertoire <- "tmp/result/intermediate/1_beta-binomial/JoinTP"
 dir.output <- "tmp/result/intermediate/1_beta-binomial/JoinTP_DifAbund"
 
-#Output params
-
-FirstSecondType <- c("1st", "2nd", "Dual", "Others", "UD")
-
-
 cores <- 24
 
 tableread_fast = function(i, header=TRUE, quote="", sep="\t"){
@@ -30,7 +25,7 @@ d.all <- data.frame()
 
 ############################### Functions ########################################
 ##Extract beta-binomial test result
-Extract <- function(file.name, dir.binomial, dir.output, FirstSecondType, ThirdType, condition){
+Extract <- function(file.name, dir.binomial, dir.output){
   #load repetoire data
   name.input <- str_c(dir.repertoire, file.name, sep = "/")
   d <- tableread_fast(name.input, header = TRUE, quote="", sep="\t")
@@ -58,61 +53,59 @@ Extract <- function(file.name, dir.binomial, dir.output, FirstSecondType, ThirdT
       d_beta$significance <- "Exp"
       #Extract query
       d_beta <- dplyr::select(d_beta, c("significance", "sequence"))
-      names(d_beta) <- c(str_c(time1, time2, "dif"), "cdr3nt")
+      names(d_beta) <- c(str_c(time2, "dif"), "cdr3nt")
       
       #Integrate binomial result into join table
       d <- dplyr::left_join(d, d_beta, by = c("ntvj"="cdr3nt"))
     } else{
       names.old <- names(d)
       d$none <- NA
-      names(d) <- c(names.old, str_c(time1, time2, "dif"))
+      names(d) <- c(names.old, str_c(time2, "dif"))
     }
   }
   
+  #For data of ID18 (no TP11 data)
+  if(ncol(d) < 27){
+    d$TP11dif <- "UC"
+  }
+  
   ###Define expanded clone with more than 2 fold increase of their frequency
-  d$TP1TP3dif[which(d$TP1TP3dif == "Exp" & d$TP1*2 > d$TP3)] <- "UC"
-  d$TP1TP2dif[which(d$TP1TP2dif == "Exp" & d$TP1*2 > d$TP2)] <- "UC"
-  d$TP2TP3dif[which(d$TP2TP3dif == "Exp" & d$TP2*2 > d$TP3)] <- "UC"
-  d$TP6TP8dif[which(d$TP6TP8dif == "Exp" & d$TP6*2 > d$TP8)] <- "UC"
-  ###Define expanded clone with more than 2 fold increase of their frequency at P1
-  d$TP2TP3dif[which(d$TP2TP3dif == "Exp" & d$TP1*2 > d$TP3)] <- "UC"
-  d$TP6TP8dif[which(d$TP6TP8dif == "Exp" & d$TP1*2 > d$TP8)] <- "UC"
+  d[is.na(d)] <- "UC"
+  d$TP2dif[which(d$TP1*2 > d$TP2 | d$TP1 > 0.0001)] <- "UC"
+  d$TP3dif[which(d$TP1*2 > d$TP3 | d$TP2*2 > d$TP3 | d$TP1 > 0.0001)] <- "UC"
+  d$TP4dif[which(d$TP1*2 > d$TP4 | d$TP3*2 > d$TP4 | d$TP1 > 0.0001)] <- "UC"
+  d$TP5dif[which(d$TP1*2 > d$TP5 | d$TP4*2 > d$TP5 | d$TP1 > 0.0001)] <- "UC"
+  d$TP6dif[which(d$TP1*2 > d$TP6 | d$TP5*2 > d$TP6 | d$TP1 > 0.0001)] <- "UC"
+  d$TP8dif[which(d$TP1*2 > d$TP8 | d$TP6*2 > d$TP8 | d$TP1 > 0.0001)] <- "UC"
+  d$TP9dif[which(d$TP1*2 > d$TP9 | d$TP8*2 > d$TP9 | d$TP1 > 0.0001)] <- "UC"
+  d$TP10dif[which(d$TP1*2 > d$TP10 | d$TP9*2 > d$TP10 | d$TP1 > 0.0001)] <- "UC"
+  d$TP11dif[which(d$TP1*2 > d$TP11 | d$TP10*2 > d$TP11 | d$TP1 > 0.0001)] <- "UC"
   
-  #Add increase/decrease between time points
-  d$TP1TP2dif[is.na(d$TP1TP2dif)] <- "UC"
-  d$TP1TP3dif[is.na(d$TP1TP2dif)] <- "UC"
-  d$TP1TP2dif[which(d$TP1TP2dif == "UC" & d$TP1*2 < d$TP2 & d$TP2 > 0.000025)] <- "Inc"
-  d$TP2TP3dif[is.na(d$TP2TP3dif)] <- "UC"
-  d$TP2TP3dif[which(d$TP2TP3dif == "UC" & d$TP2 < d$TP3 & d$TP1*2 < d$TP3 & d$TP3 > 0.000025)] <- "Inc"
-  d$TP6TP8dif[is.na(d$TP6TP8dif)] <- "UC"
-  d$TP6TP8dif[which(d$TP6TP8dif == "UC" & d$TP6 < d$TP8 & d$TP1*2 < d$TP8 & d$TP8 > 0.000025)] <- "Inc"
-  
-  ###Judge first/second/dual/third responders
-  d$Resp <- "Others"
-  #3rd responder: not detected from TP1 to TP6, and expanded at TP8
-  d$Resp[which(d$TP1 == 0 & d$TP2 == 0 & d$TP3 == 0 & d$TP4 == 0 & d$TP5 == 0 & d$TP6 == 0 &  d$TP8 != 0 &
-                 d$TP6TP8dif == "Exp")] <- "3rd"
-  #3rd responder: not detected from TP1 to TP6, and increased at TP8
-  d$Resp[which(d$TP1 == 0 & d$TP2 == 0 & d$TP3 == 0 & d$TP4 == 0 & d$TP5 == 0 & d$TP6 == 0 &  d$TP8 != 0 &
-                 d$TP6TP8dif == "Inc")] <- "3rdInc"
-  ##1st responder: Expand at TP2 -> not increase at TP3
-  d$Resp[which(d$TP1TP2dif == "Exp" & d$TP2TP3dif == "UC" & d$TP1 < 0.0001)] <- "1st"
-  ##1st increased: Increased at TP2 -> not increase at TP3
-  d$Resp[which(d$TP1TP2dif == "Inc" & d$TP2TP3dif == "UC" & d$TP1 < 0.0001)] <- "1stInc"
-  ##2nd responder: not increase at TP2 -> Expand at TP3
-  d$Resp[which(d$TP2TP3dif == "Exp" & d$TP1TP2dif == "UC" & d$TP1 < 0.0001)] <- "2nd"
-  ##2nd increased: not increase at TP2 -> Increased at TP3
-  d$Resp[which(d$TP2TP3dif == "Inc" & d$TP1TP2dif == "UC" & d$TP1 < 0.0001)] <- "2ndInc"
-  ##Dual Increased: Inc at TP2 & TP3 
-  d$Resp[which(d$TP1TP2dif != "UC" & d$TP2TP3dif != "UC" & d$TP1 < 0.0001)] <- "DualInc"
-  ##Dual responder: Exp from TP1 to TP3 -> Inc at TP2 & TP3 
-  d$Resp[which(d$TP1TP3dif == "Exp" & d$Resp == "DualInc" & d$TP1 < 0.0001)] <- "Dual"
-
   #Append changes in frequency after vaccination
-  d$TP1_TP2 <- d$TP2 - d$TP1
-  d$TP2_TP3 <- d$TP3 - d$TP2
-  d$TP6_TP8 <- d$TP8 - d$TP6
+  d$TP2difFreq <- d$TP2 - d$TP1
+  d$TP3difFreq <- d$TP3 - d$TP2
+  d$TP4difFreq <- d$TP4 - d$TP3
+  d$TP5difFreq <- d$TP5 - d$TP4
+  d$TP6difFreq <- d$TP6 - d$TP5
+  d$TP8difFreq <- d$TP8 - d$TP6
+  d$TP9difFreq <- d$TP9 - d$TP8
+  d$TP10difFreq <- d$TP10 - d$TP9
+  d$TP11difFreq <- d$TP11 - d$TP10
   
+  ###Judge early/main/third responders
+  d$Resp <- "Others"
+  #Third responder: not detected until TP8, expanded at TP8
+  d$Resp[which(d$TP8dif == "Exp" & d$TP1 == 0 & d$TP2 == 0 & d$TP3 == 0 &
+                 d$TP4 == 0 & d$TP5 == 0 & d$TP6 == 0)] <- "Third"
+  #Early responder: expanded at TP2
+  d$Resp[which(d$TP2dif == "Exp")] <- "Early"
+  #Main responder: not expanded at TP2, expanded at TP3
+  d$Resp[which(d$TP2dif == "UC" & d$TP3dif == "Exp")] <- "Main"
+  ##Trial
+  #Late responder: not expanded at TP2, expanded at TP3
+  d$Resp[which(d$TP2dif == "UC" & d$TP3dif == "UC" & d$TP4dif == "Exp")] <- "Late"
+  
+  #Output
   name.output <- str_c(dir.output, file.name, sep = "/") %>% str_replace("join.strict.table.txt", "DifAbund.csv")
   fwrite(d, name.output, sep=",", nThread=32)
 }
@@ -127,7 +120,6 @@ t<-proc.time()
 cl <- makeCluster(cores)
 registerDoParallel(cl)   
 output <- foreach(file.name = files, .combine = rbind,
-                    .packages=c("data.table", "stringr", "dplyr")) %dopar% {Extract(file.name, dir.binomial, dir.output,
-                                                                                    FirstSecondType, ThirdType, condition)}
+                    .packages=c("data.table", "stringr", "dplyr")) %dopar% {Extract(file.name, dir.binomial, dir.output)}
 stopCluster(cl)
 proc.time()-t

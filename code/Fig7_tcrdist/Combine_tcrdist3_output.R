@@ -65,7 +65,7 @@ name.output <- str_c(dir.output, "vdjdb_metaclonotypes.tsv", sep = "/")
 
 out$protein <- str_replace(out$protein, "Spike", "S")
 
-###Tet, Motozono data?̕???
+###Split meta-clonotype by their source
 out_tet <- dplyr::filter(out, str_detect(protein_coordinate, "Tet_"))
 out_iedb <- dplyr::filter(out, str_detect(protein_coordinate, "IEDB_"))
 out_vdjdb <- dplyr::filter(out, str_detect(protein_coordinate, "vdjdb_"))

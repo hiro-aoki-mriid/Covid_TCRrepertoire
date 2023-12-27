@@ -7,10 +7,12 @@ library(data.table)
 library(dplyr)
 
 dir.input <- "tmp/result/intermediate/1_beta-binomial/JoinTP_DifAbund"
+dir.output <- "tmp/result/Fig1"
+file.output <- "1FG.FirstSecond.Resp.csv"
 
 #Output params
 
-FirstSecondType <- c("1st", "1stInc", "2nd", "2ndInc", "Dual", "DualInc", "3rd", "3rdInc", "Others")
+FirstSecondType <- c("Early", "Main", "Late", "Third")
 
 files  <- list.files(dir.input, pattern="DifAbund.csv")
 
@@ -64,6 +66,7 @@ output <- foreach(file.name = files, .combine = rbind,
                                                                                  FirstSecondType, ThirdType, condition)}
 stopCluster(cl)
 proc.time()-t
-  
-name.output <- "result/Fig1/FirstSecond.Resp.csv"
+
+dir.create(dir.output, recursive = TRUE)
+name.output <- str_c(dir.output, file.output, sep = "/")
 write.csv(output, name.output, row.names = FALSE)

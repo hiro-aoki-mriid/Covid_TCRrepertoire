@@ -12,12 +12,12 @@ library(dplyr)
 library(data.table)
 
 #Input layer
-dir.input <- "tmp/result/intermediate/6_Tet/JoinTP_DifAbund_AIM_Tet"
-name.output.table <- "tmp/result/Fig6/tetramer_table.csv"
-name.output <- "tmp/result/Fig6/tetramer_frequency.csv"
+dir.input <- "tmp/result/intermediate/5_Tet/JoinTP_DifAbund_Tet"
+name.output.table <- "tmp/result/Fig5/tetramer_table.csv"
+name.output <- "tmp/result/Fig5/tetramer_frequency.csv"
 cores <- 12
 params <- c("TP1", "TP2", "TP3", "TP4", "TP5", "TP6", "TP8", "TP9", "TP10", "TP11")
-epitope_query <-c("NF9", "QI9")
+epitope_query <-c("S269", "S448", "S919", "S1208")
 
 #################################### Processing layer ####################################################
 ###Define functions
@@ -45,7 +45,7 @@ Main <- function(file.name, dir.input, dir.output){
   return(d_sub)
 }
 
-###Main module
+#################################### Main module ####################################################
 files  <- list.files(dir.input, pattern="NaraCOVID")
 t<-proc.time()
 cl <- makeCluster(cores)
@@ -64,7 +64,10 @@ participants <- unique(d$sample)
 output.all <- data.frame()
 for(epitope in epitope_query){
   #Extract table of each epitope
-  d_sub <- dplyr::filter(d, tetramer == epitope)
+  TPs <- names(d)[9:18]
+  d_sub <- dplyr::select(d, c(TPs, epitope, sample))
+  names(d_sub) <- c(TPs, "tetramer", "sample")
+  d_sub <- dplyr::filter(d_sub, tetramer == "Posi")
     
   #Prepare output data frame
   output <- createEmptyDf(length(participants), length(params), colnames = params )
@@ -79,7 +82,20 @@ for(epitope in epitope_query){
       output[i,] <- 0
     } 
   }
+  #Only export donors with specific clones
   output$ID <- participants
+  output$detect <- apply(dplyr::select(output, contains("TP")), 1, sum)
+  output <- dplyr::filter(output, detect > 0) %>% dplyr::select(-c("detect"))
+  #Judge whether donors were responded to the epitope or not
+  responder_judge <- function(x){
+    out <- "Non"
+    if(max(x[2], x[3], x[7]) > max(0.0005, 5*x[1])){
+      out <- "Exp"
+    }
+    return(out)
+  }
+  output$classify <- apply(dplyr::select(output, contains("TP")), 1, responder_judge)
+  
   output$epitope <- epitope
 
   output.all <- rbind(output.all, output)

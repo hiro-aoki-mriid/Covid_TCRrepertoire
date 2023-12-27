@@ -13,12 +13,14 @@ library(data.table)
 #Input layer
 name.input <- "tmp/result/Fig7/tcrdist_clones.csv"
 name.hla <- "tmp/metadata/HLAtyping_result.csv"
-name.output <- "tmp/result/Fig7/tcrdist_epitope_TP12Exp_Freq.csv"
+dir.output <- "tmp/result/Fig7"
+name.output <- "tcrdist_epitope_TP12Exp_Freq.csv"
 cores <- 12
-FirstSecondType <- c("1st", "2nd", "Dual", "3rd")
+FirstSecondType <- c("Early", "Main", "Third")
+epitope_query <-c("S269", "S448", "S919", "S1208")
 TPs <- c("TP1", "TP2", "TP3", "TP4", "TP5", "TP6", "TP8", "TP9", "TP10", "TP11")
 
-#################################### Processing layer ####################################################
+############################### Define functions ########################################
 ###Define functions
 #Table.read.fast
 tableread_fast = function(i, header=TRUE, quote="", sep=","){
@@ -30,16 +32,18 @@ createEmptyDf = function( nrow, ncol, colnames = c() ){
   data.frame( matrix( vector(), nrow, ncol, dimnames = list( c(), colnames ) ) )
 }
 
+############################### Processing ########################################
 ##load data
 #load tcrdist3 data
+dir.create(dir.output, recursive = TRUE)
 d <- tableread_fast(name.input, header = TRUE, quote="\"", sep=",")
-d <- dplyr::filter(d, target != "non&non")
-epitope_query <- unique(d$target)
+d <- dplyr::filter(d, motif == "Posi")
 
 output.all <- data.frame()
 for(epitope in epitope_query){
   #Extract table of each epitope
-  d_sub <- dplyr::filter(d, target == epitope)
+  d$motif <- d[,which(names(d) == str_c(epitope, "_motif"))]
+  d_sub <- dplyr::filter(d, motif == "Posi")
   IDs <- unique(d_sub$sample)
   
   for(id in IDs){
@@ -64,4 +68,5 @@ for(epitope in epitope_query){
   }
 }
 
+name.output <- str_c(dir.output, name.output, sep = "/")
 write.csv(output.all, name.output, row.names = FALSE)

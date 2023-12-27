@@ -11,15 +11,17 @@ library(dplyr)
 library(data.table)
 
 #Input layer
-name.input <- "tmp/result/Fig6/tetramer_table.csv"
+name.input <- "tmp/result/Fig5/tetramer_table.csv"
 name.hla <- "tmp/metadata/HLAtyping_result.csv"
-name.output <- "tmp/result/Fig6/tetramer_TP12Exp_Freq.csv"
+dir.output <- "tmp/result/Fig6"
+name.output <- "tetramer_TP12Exp_Freq.csv"
+
 cores <- 12
-FirstSecondType <- c("1st", "2nd", "Dual", "3rd")
+FirstSecondType <- c("Early", "Main", "Third")
+epitope_query <-c("S269", "S448", "S919", "S1208")
 TPs <- c("TP1", "TP2", "TP3", "TP4", "TP5", "TP6", "TP8", "TP9", "TP10", "TP11")
 
-#################################### Processing layer ####################################################
-###Define functions
+############################### Define functions ########################################
 #Table.read.fast
 tableread_fast = function(i, header=TRUE, quote="", sep=","){
   tmp = fread(i, header=header, sep=sep, quote=quote, nThread=32)
@@ -30,16 +32,22 @@ createEmptyDf = function( nrow, ncol, colnames = c() ){
   data.frame( matrix( vector(), nrow, ncol, dimnames = list( c(), colnames ) ) )
 }
 
+############################### Processing ########################################
+dir.create(dir.output, recursive = TRUE)
 ##load data
 #load tcrdist3 data
 d <- tableread_fast(name.input, header = TRUE, quote="\"", sep=",")
-epitope_query <- unique(d$tetramer)
 
 output.all <- data.frame()
 for(epitope in epitope_query){
   #Extract table of each epitope
-  d_sub <- dplyr::filter(d, tetramer == epitope)
+  d$tetramer <- d[,which(names(d) == epitope)]
+  d_sub <- dplyr::filter(d, tetramer == "Posi")
   IDs <- unique(d_sub$sample)
+  
+  #Output clone table splitted by epitope
+  name.output.table <- str_replace(name.input, "Fig5", "Fig6") %>% str_replace("tetramer", epitope)
+  write.csv(d_sub, name.output.table, row.names = FALSE)
   
   for(id in IDs){
     #Extract data of each participants
@@ -63,4 +71,4 @@ for(epitope in epitope_query){
   }
 }
 
-write.csv(output.all, name.output, row.names = FALSE)
+write.csv(output.all, str_c(dir.output, name.output, sep = "/"), row.names = FALSE)

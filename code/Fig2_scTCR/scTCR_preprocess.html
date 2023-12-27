@@ -14644,7 +14644,16 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
-<pre>Attaching SeuratObject
+<pre>The legacy packages maptools, rgdal, and rgeos, underpinning the sp package,
+which was just loaded, will retire in October 2023.
+Please refer to R-spatial evolution reports for details, especially
+https://r-spatial.org/r/2023/05/15/evolution4.html.
+It may be desirable to make the sf package available;
+package maintainers should consider adding sf to Suggests:.
+The sp package is now running under evolution status 2
+     (status 2 uses the sf package in place of rgdal)
+
+Attaching SeuratObject
 
 Loading required package: viridisLite
 
@@ -15060,7 +15069,7 @@ The following object is masked from ‘package:igraph’:
 <div class=" highlight hl-r"><pre><span></span><span class="c1">##Merge data</span>
 
 <span class="c1">#Input layer</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID_merged&quot;</span>
 
 <span class="c1">########################## Processing layer ###############################</span>
@@ -15113,7 +15122,7 @@ The following object is masked from ‘package:igraph’:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Batch-Effect%E8%A3%9C%E6%AD%A3-/-1st-Analysis">Batch Effect&#35036;&#27491; / 1st Analysis<a class="anchor-link" href="#Batch-Effect%E8%A3%9C%E6%AD%A3-/-1st-Analysis">&#182;</a></h1>
+<h1 id="Correct-Batch-Effect-/-1st-Analysis">Correct Batch Effect / 1st Analysis<a class="anchor-link" href="#Correct-Batch-Effect-/-1st-Analysis">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -15128,7 +15137,7 @@ The following object is masked from ‘package:igraph’:
 <div class=" highlight hl-r"><pre><span></span><span class="c1">###Exclude CD4+ cells and doublet</span>
 
 <span class="c1">##Input layer</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">dir.name</span><span class="o">=</span><span class="s">&quot;Seurat_plots&quot;</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID_CD8only&quot;</span>
 <span class="n">gene.list.name</span> <span class="o">&lt;-</span> <span class="s">&quot;metadata/BD_genes_human.txt&quot;</span>
@@ -15210,7 +15219,7 @@ Centering and scaling data matrix
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-r"><pre><span></span><span class="c1">##Input layer</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID_ADTnorm_RPCA.wnn&quot;</span>
 <span class="n">dir.name</span><span class="o">=</span><span class="s">&quot;Seurat_plots&quot;</span>
 <span class="n">resol</span> <span class="o">&lt;-</span> <span class="m">0.25</span> <span class="c1"># resolution for clustering</span>
@@ -15929,7 +15938,7 @@ This message will be shown once per session”
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="1st-Analysis,-%E7%B5%90%E6%9E%9C%E3%81%AE%E7%A2%BA%E8%AA%8D">1st Analysis, &#32080;&#26524;&#12398;&#30906;&#35469;<a class="anchor-link" href="#1st-Analysis,-%E7%B5%90%E6%9E%9C%E3%81%AE%E7%A2%BA%E8%AA%8D">&#182;</a></h1>
+<h1 id="Check-the-result-of-1st-Analysis">Check the result of 1st Analysis<a class="anchor-link" href="#Check-the-result-of-1st-Analysis">&#182;</a></h1>
 </div>
 </div>
 </div>
@@ -16156,10 +16165,10 @@ This message will be shown once per session”
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-r"><pre><span></span><span class="c1">##Create Dim Plot</span>
-<span class="c1">##マーカー遺伝子の確認, lineage marker発現の確認</span>
+<span class="c1">##Check lineage marker gene expression</span>
 
 <span class="c1">###Input layer</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID.ADTnorm_RPCA.wnn&quot;</span>
 <span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;Seurat_plots&quot;</span>
 <span class="n">red.use</span> <span class="o">&lt;-</span> <span class="s">&quot;wnn.umap&quot;</span>
@@ -16428,20 +16437,6 @@ Calculating cluster 10
 </div>
 </div>
 </div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>・subsetをしても補正後のデータはseurat object内に残る
-・特定サブセット (MAITなど) を除去すると, ADTの発現ヒストグラムの形状が変化し, ADTnormの補正がうまくいかなくなる可能性あり
-→(RNA含め) subset後はscale.data移行を行い, normalizeのステップは実施しない</p>
-
-</div>
-</div>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -16450,11 +16445,11 @@ Calculating cluster 10
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-r"><pre><span></span><span class="c1">###方針6</span>
+<div class=" highlight hl-r"><pre><span></span><span class="c1">##Input layer</span>
 <span class="n">seu</span> <span class="o">&lt;-</span> <span class="nf">subset</span><span class="p">(</span><span class="n">seu</span><span class="p">,</span> <span class="n">idents</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span><span class="p">,</span> <span class="m">6</span><span class="p">,</span> <span class="m">8</span><span class="p">,</span> <span class="m">9</span><span class="p">,</span> <span class="m">10</span><span class="p">))</span><span class="c1">#7: gd T cells</span>
 <span class="nf">str</span><span class="p">(</span><span class="n">seu</span><span class="p">)</span>
 
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID_ADTnorm_RPCA.wnn&quot;</span>
 <span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;Seurat_plots_2nd&quot;</span>
 <span class="n">red.use</span> <span class="o">&lt;-</span> <span class="s">&quot;wnn.umap&quot;</span>
@@ -17096,7 +17091,7 @@ Constructing multimodal SNN graph
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-r"><pre><span></span><span class="c1">###Check clustering resolution / Merker genes for each cluster</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID.ADTnorm_RPCA.wnn&quot;</span>
 <span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;Seurat_plots_2nd&quot;</span>
 <span class="n">red.use</span> <span class="o">&lt;-</span> <span class="s">&quot;wnn.umap&quot;</span>
@@ -17370,10 +17365,10 @@ Calculating cluster 10
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-r"><pre><span></span><span class="c1">###方針6</span>
+<div class=" highlight hl-r"><pre><span></span><span class="c1">##Input layer </span>
 <span class="n">seu</span> <span class="o">&lt;-</span> <span class="nf">subset</span><span class="p">(</span><span class="n">seu</span><span class="p">,</span> <span class="n">idents</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="m">1</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span><span class="p">,</span> <span class="m">6</span><span class="p">,</span> <span class="m">8</span><span class="p">,</span> <span class="m">10</span><span class="p">))</span> <span class="c1">#2,9: MAIT cells</span>
 
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID_ADTnorm_RPCA.wnn&quot;</span>
 <span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;Seurat_plots_3rd&quot;</span>
 <span class="n">red.use</span> <span class="o">&lt;-</span> <span class="s">&quot;wnn.umap&quot;</span>
@@ -17596,7 +17591,7 @@ Constructing multimodal SNN graph
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-r"><pre><span></span><span class="c1">###Check clustering resolution / Merker genes for each cluster</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID&quot;</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;Seurat_plots_3rd&quot;</span>
 <span class="n">red.use</span> <span class="o">&lt;-</span> <span class="s">&quot;wnn.umap&quot;</span>
 <span class="n">tmp_rna</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;TRBC2&quot;</span><span class="p">,</span> <span class="s">&quot;TRDC&quot;</span><span class="p">,</span> <span class="s">&quot;CD14&quot;</span><span class="p">,</span> <span class="s">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s">&quot;KLRB1&quot;</span><span class="p">,</span> <span class="s">&quot;ZBTB16&quot;</span><span class="p">)</span>
@@ -17879,7 +17874,7 @@ Calculating cluster 8
 
 <span class="c1">###Visualize clusters</span>
 <span class="n">sample.name</span> <span class="o">&lt;-</span> <span class="s">&quot;COVID_ADTnorm_RPCA.wnn&quot;</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;Seurat_plots_3rd_womin&quot;</span>
 <span class="n">red.use</span> <span class="o">&lt;-</span> <span class="s">&quot;wnn.umap&quot;</span>
 <span class="n">tmp_rna</span> <span class="o">=</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;TRBC2&quot;</span><span class="p">,</span> <span class="s">&quot;TRDC&quot;</span><span class="p">,</span> <span class="s">&quot;CD14&quot;</span><span class="p">,</span> <span class="s">&quot;MS4A1&quot;</span><span class="p">,</span> <span class="s">&quot;KLRB1&quot;</span><span class="p">,</span> <span class="s">&quot;ZBTB16&quot;</span><span class="p">)</span>
@@ -18321,7 +18316,7 @@ Calculating cluster 5
 <span class="n">sample.names</span> <span class="o">&lt;-</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;ID02TCR&quot;</span><span class="p">,</span> <span class="s">&quot;ID28TCR&quot;</span><span class="p">,</span> <span class="s">&quot;TP38TCR1&quot;</span><span class="p">,</span> <span class="s">&quot;TP38TCR2&quot;</span><span class="p">)</span>
 <span class="n">dir.input</span> <span class="o">&lt;-</span> <span class="s">&quot;data/original/SCT&quot;</span>
 <span class="n">cores</span> <span class="o">&lt;-</span> <span class="m">12</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 <span class="n">dir.output</span> <span class="o">&lt;-</span> <span class="s">&quot;scTCR_processing&quot;</span>
 <span class="c1">#Threshold for valid cell barcode with single TCR sequence</span>
 <span class="n">count_th</span> <span class="o">&lt;-</span> <span class="m">5</span> <span class="c1">#read count threshold for all TCR sequences per cell barcode</span>
@@ -18562,7 +18557,7 @@ See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.”
 <span class="n">dir.input</span> <span class="o">&lt;-</span> <span class="s">&quot;metadata&quot;</span>
 <span class="n">name.input</span> <span class="o">&lt;-</span> <span class="s">&quot;Score.Gene.list.txt&quot;</span>
 <span class="n">name.reference</span> <span class="o">&lt;-</span> <span class="s">&quot;BD_genes_human.txt&quot;</span>
-<span class="n">dir.output</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT/GeneScoreSource&quot;</span>
+<span class="n">dir.output</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT/GeneScoreSource&quot;</span>
 
 <span class="c1">######################## Processing layer #########################</span>
 <span class="nf">dir.create</span><span class="p">(</span><span class="n">dir.output</span><span class="p">)</span>
@@ -18597,8 +18592,8 @@ See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.”
 <div class=" highlight hl-r"><pre><span></span><span class="c1"># Introduce Gene Scores using AddModuleScore function</span>
 
 <span class="c1">#Put signature gene set into &quot;Signatures&quot; directory</span>
-<span class="n">dir.input</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT/GeneScoreSource&quot;</span>
-<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT&quot;</span>
+<span class="n">dir.input</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT/GeneScoreSource&quot;</span>
+<span class="n">dir.SCT</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT&quot;</span>
 
 <span class="c1">########################## Processing layer #############################</span>
 <span class="c1">#load Signature data</span>
@@ -18752,7 +18747,7 @@ Warning message:
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-r"><pre><span></span><span class="c1">##Make clone table by assembling clones from scTCR results </span>
 
-<span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT/scTCR_analysis&quot;</span>
+<span class="n">dir.name</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT/scTCR_analysis&quot;</span>
 
 <span class="c1">##################### Processing layer #############################################################</span>
 <span class="nf">dir.create</span><span class="p">(</span><span class="n">dir.name</span><span class="p">)</span>
@@ -18862,9 +18857,9 @@ Using Freq as value column: use value.var to override.
 <div class=" highlight hl-r"><pre><span></span><span class="c1">###Merge SCT metadata with WGCNA pattern / AIM positivity</span>
 
 <span class="c1">#Input layer</span>
-<span class="n">dir.input.scTCR</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT/scTCR_analysis&quot;</span>
-<span class="n">dir.input.bulk</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_AIM/JoinTP_DifAbund_AIM&quot;</span>
-<span class="n">dir.output</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/3_SCT/scTCR_analysis&quot;</span>
+<span class="n">dir.input.scTCR</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT/scTCR_analysis&quot;</span>
+<span class="n">dir.input.bulk</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/1_beta-binomial/JoinTP_DifAbund&quot;</span>
+<span class="n">dir.output</span> <span class="o">&lt;-</span> <span class="s">&quot;result/intermediate/2_SCT/scTCR_analysis&quot;</span>
 
 <span class="n">sample.names</span> <span class="o">&lt;-</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;002&quot;</span><span class="p">,</span> <span class="s">&quot;027&quot;</span><span class="p">,</span> <span class="s">&quot;010&quot;</span><span class="p">,</span> <span class="s">&quot;019&quot;</span><span class="p">,</span> <span class="s">&quot;022&quot;</span><span class="p">,</span> <span class="s">&quot;031&quot;</span><span class="p">,</span> <span class="s">&quot;035&quot;</span><span class="p">)</span>
 <span class="n">sample.scts</span> <span class="o">&lt;-</span> <span class="nf">c</span><span class="p">(</span><span class="s">&quot;ID2.TCR&quot;</span><span class="p">,</span> <span class="s">&quot;ID27.TCR&quot;</span><span class="p">,</span> <span class="s">&quot;ID10.TCR&quot;</span><span class="p">,</span> <span class="s">&quot;ID19.TCR&quot;</span><span class="p">,</span> <span class="s">&quot;ID22.TCR&quot;</span><span class="p">,</span> <span class="s">&quot;ID31.TCR&quot;</span><span class="p">,</span> <span class="s">&quot;ID35.TCR&quot;</span><span class="p">)</span>

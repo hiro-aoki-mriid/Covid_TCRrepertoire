@@ -12,10 +12,10 @@ library(dplyr)
 library(data.table)
 
 #Input layer
-dir.output <- "tmp/result/Fig4"
-dir.input <- "tmp/result/intermediate/2_AIM/JoinTP_DifAbund_AIM"
+dir.output <- "tmp/result/Fig3"
+dir.input <- "tmp/result/intermediate/1_beta-binomial/JoinTP_DifAbund"
 cores <- 12
-params <- c("TP3", "TP3FC")
+param <- "TP3"
 
 #################################### Processing layer ####################################################
 ###Define functions
@@ -32,7 +32,7 @@ Combine <- function(file.name, extract, dir.AIM, dir.input){
   #load data
   name.input <- str_c(dir.input, file.name, sep = "/")
   data <- tableread_fast(name.input, header = TRUE, quote="\"", sep=",")
-  data <- dplyr::filter(data, Resp == "2nd")
+  data <- dplyr::filter(data, Resp == "Main")
   if(nrow(data) > 0){
     data$name <- file.name
   }
@@ -54,20 +54,19 @@ out <- foreach(file.name = files,
 stopCluster(cl)
 proc.time()-t
 
-##Classify clones based on TP6-TP8 Expansion
-out$TP6TP8dif[which(out$TP8 == 0)] <- "UD"
-out$TP6TP8dif[which(out$TP6TP8dif == "Inc")] <- "UC"
+##Label disappeared clones after 3rd shot
+out$TP8dif[which(out$TP8 == 0)] <- "UD"
 
 ##Summarize statistcal parameters
 
-data_plot <- dplyr::select(out, c("TP6TP8dif", param))
+data_plot <- dplyr::select(out, c("TP8dif", param))
 names(data_plot) <- c("class", "param")
 
 medians <- dplyr::group_by(data_plot, class) %>% dplyr::summarise(Median = median(param))
 
 #Create histogram
 ppi <- 600
-file.name <- str_c(dir.output, "S4C", sep = "/") %>% str_c(param, "vsTP8State.tiff", sep = ".")
+file.name <- str_c(dir.output, "S3C", sep = "/") %>% str_c(param, "vsTP8State.tiff", sep = ".")
 tiff(file.name, width=1.5*ppi, height=1.3*ppi, res=ppi)
 p <- ggplot(data_plot, aes(x=log10(100*param), fill=class)) +
   geom_density(alpha = 0.6, size = 0.25) +

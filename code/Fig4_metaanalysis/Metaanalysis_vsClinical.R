@@ -1,4 +1,4 @@
-# パッケージの読み込み
+#Load packages
 library(ComplexHeatmap)
 library(circlize)
 library(stringr)
@@ -7,19 +7,20 @@ library(ggplot2)
 library(ggsignif)
 library(data.table)
 library(qvalue)
+library(coin)
 
-#Fontの導入
+#Load Fonts
 library(extrafont)
 loadfonts("win")
 
 #Input layer
 Cells <- c("CD4", "CD8")
 
-dir.input <- "tmp/result/Fig5"
+dir.input <- "tmp/result/Fig4"
 name.clinical <- "tmp/metadata/Metaanalysis_Clinical.txt"
-dir.name.heatmap <- "tmp/result/Fig5/5AB"
-dir.name.scatter <- "tmp/result/Fig5/S5C"
-dir.name.bar <- "tmp/result/Fig5/Association_Factor"
+dir.name.heatmap <- "tmp/result/Fig4/S4BC_vsClinical"
+dir.name.scatter <- "tmp/result/Fig4/S4D"
+dir.name.bar <- "tmp/result/Fig4/Association_Factor"
 
 #Type of parameters
 param.fact <- c("Sex")
@@ -139,7 +140,7 @@ Correlation <- function(data1, data2, name1, name2,
   col_fun = colorRamp2(c(-1, -0.5, 0, 0.5, 1), c("blue","cyan","white","magenta", "red"))
   #Output
   ppi <- 300
-  tiff(heatmapname, width=5.8*ppi, height=2.8*ppi, res = ppi)
+  tiff(heatmapname, width=5.8*ppi, height=2.6*ppi, res = ppi)
   p <- Heatmap(result.heat, name = "name", col = col_fun,
                cell_fun = function(j, i, x, y, width, height, fill) {
                  grid.text(sprintf(result.heat.q[i, j]), x, y, gp = gpar(fontsize = 10))
@@ -168,9 +169,8 @@ BarPlot <- function(d_sub, dir.name.bar, x.param_name, y.param_name, test, p.val
   png(image.file, width=3*ppi, height=2.4*ppi, res=ppi)
   
   ##Plotting graphs
-  #p-valueを表示する位置を調整
+  #Adjust the position for plotting p-value
   ymax <- max(log10(d_sub$rep))
-  #pvalueを表示する位置
   if(ymax > 0){
     ylim <- ymax*1.5
     ypos <- ylim*0.85
@@ -211,7 +211,7 @@ Factors <- function(data1, data2, name1, name2, dir.name.bar){
   
   ###Calculate correlation coefficient
   ##Prepare output
-  result.csv <- createEmptyDf(length(param1)*length(param2), 1, colnames = c("pvalue") )
+  result.csv <- createEmptyDf(length(param1)*length(param2), 3, colnames = c("num.pos", "pvalue", "rvalue") )
   x.param.names <- vector()
   y.param.names <- vector()
   test.names <- vector()
@@ -229,26 +229,23 @@ Factors <- function(data1, data2, name1, name2, dir.name.bar){
       #Create data.frame for analysis
       d_sub <- data.frame(data1[,i], data2[,j])
       names(d_sub) <- c("repertoire", "clinical")
+      d_sub$clinical <- as.factor(d_sub$clinical)
       
       #classify based on clinical parameter
       clin.class <- length(unique(d_sub$clinical))
-      #class.num = 2 -> Perform wilcox.test
-      if(clin.class == 2){
-        ##Perform test
-        split.data <- split(d_sub, d_sub$clinical)
-        test <- "wilcox.test"
-        d_test <- wilcox.test(split.data[[1]]$repertoire, split.data[[2]]$repertoire)
-        p.value <- as.numeric(d_test$p.value)
-      }
-      #class.num > 2 -> Perform Kruskal-Wallis test
-      if(clin.class > 2){
-        ##Perform test
-        test <- "kruskal.test"
-        d_test <- kruskal.test(repertoire~clinical, d_sub)
-        p.value <- as.numeric(d_test$p.value)
-      }
+      ##Perform wilcox.test
+      split.data <- split(d_sub, d_sub$clinical)
+      num.pos <- nrow(split.data[[2]]) #Record the number of positive participants
+      test <- "wilcox.test"
+      d_test <- coin::wilcox_test(repertoire ~ clinical, data = d_sub,
+                                  alternative = "two.sided", distribution = "exact", ties.method = "mid-ranks")
+      p.value <- coin::pvalue(d_test)
+      r.value <- abs(d_test@statistic@teststatistic) / sqrt(nrow(d_sub))
+      
       #Keep records
-      result.csv[k,1] <- p.value
+      result.csv[k,1] <- num.pos
+      result.csv[k,2] <- p.value
+      result.csv[k,3] <- r.value
       test.names <- c(test.names, test)
       
       ###Create Bar Plot
@@ -272,6 +269,11 @@ Factors <- function(data1, data2, name1, name2, dir.name.bar){
   result.csv$signif[which(result.csv$qvalue < 0.05)] <- "*"
   result.csv$signif[which(result.csv$qvalue < 0.01)] <- "**"
   result.csv$signif[which(result.csv$qvalue < 0.001)] <- "***"
+  #Judge effect size
+  result.csv$effect <- ""
+  result.csv$effect[which(result.csv$rvalue > 0.1)] <- "*"
+  result.csv$effect[which(result.csv$rvalue > 0.3)] <- "**"
+  result.csv$effect[which(result.csv$rvalue > 0.5)] <- "***"
   #Output
   write.csv(result.csv, csv.name, row.names = FALSE)
 }
@@ -287,7 +289,7 @@ for(Cell in Cells){
   d <- tableread_fast(name.input, header = TRUE, sep=",")
   clinical <- read.table(name.clinical, header = TRUE)
   
-  #HLA allele保有データへの変換
+  #Convert to (+) or (-) of HLA allele
   HLAs <- as.vector(str_split(clinical$HLA.All, pattern = "_", simplify = TRUE))
   HLAs <- unique(HLAs[HLAs>0])
   table_HLA <- createEmptyDf( nrow(clinical), length(HLAs), colnames = HLAs )
@@ -298,18 +300,25 @@ for(Cell in Cells){
   HLA_count <- apply(table_HLA, 2, sum)
   table_HLA_analyze <- dplyr::select(table_HLA, names(HLA_count[HLA_count>4]))
   
-  #カテゴリーデータと数値データに分類
+  #Cllasify into categorical and numeric data
   clin.fact <- cbind(dplyr::select(clinical, c(param.fact)), table_HLA_analyze)
   clin.num <- dplyr::select(clinical, c(param.num))
   
-  ###数値データ: 相関解析実施
+  ###Numeric data: perform correlation analysis
   ##Perform analysis
   Correlation(d, clin.num, Cell, "Clinical",
               dir.name.heatmap, dir.name.scatter)
   
-  #カテゴリーデータ: グラフ作成, One-way ANOVA実施
+  #Categorical data: plot bar graph with One-way ANOVA
   ##Prepare output directory
   dir.create(dir.name.bar, recursive = TRUE)
   ##Perform analysis
-  Factors(d, clin.fact, Cell, "Clinical", dir.name.bar)
+  #Select HLA-I or HLA-II for CD8 or CD4 data, respectively
+  if(Cell == "CD4"){
+    clin.fact_sub <- dplyr::select(clin.fact, starts_with("DR"))
+    clin.fact_sub$Sex <- clin.fact$Sex
+  } else {
+    clin.fact_sub <- dplyr::select(clin.fact, !starts_with("DR"))
+  }
+  Factors(d, clin.fact_sub, Cell, "Clinical", dir.name.bar)
 }
