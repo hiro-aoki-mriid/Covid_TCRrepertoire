@@ -9,15 +9,18 @@
 
 ###Download data
 ##For bulk TCRseq analysis
-wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1OWhxqi2GrcMxny0tvxfu5DLUxLLjFDkv' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1OWhxqi2GrcMxny0tvxfu5DLUxLLjFDkv" -O raw.data.tar.bz2 && rm -rf /tmp/cookies.txt
+#Download data from the following link
+#https://tus.box.com/s/wuns7hr8soqolli4dnojz31as5ym79br
 tar -jxvf raw.data.tar.bz2
 mv raw.data data/original
 ##For beta-binomial tests
-wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1z1ce87jLHPUFOtOFw45Qtpevu_QV-KH7' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1z1ce87jLHPUFOtOFw45Qtpevu_QV-KH7" -O differential_abundance.tar.bz2 && rm -rf /tmp/cookies.txt
+#Download data from the following link
+#https://tus.box.com/s/y3thp9pvd6pknfvr1kyq4yeizep1ni3x
 tar -jxvf differential_abundance.tar.bz2
 mv differential_abundance data/public
 ##For SCT analysis
-wget --load-cookies /tmp/cookies.txt "https://drive.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://drive.google.com/uc?export=download&id=1B8dI20Z4XY7RTkJjFO_GlEZPlXq5VeJ6' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1B8dI20Z4XY7RTkJjFO_GlEZPlXq5VeJ6" -O SCT.tar.bz2 && rm -rf /tmp/cookies.txt
+#Download data from the following link
+#https://tus.box.com/s/xhocu6dvdt3srp2cf8swp9bjgzosrtj2
 tar -jxvf SCT.tar.bz2
 mv SCT data/original
 
