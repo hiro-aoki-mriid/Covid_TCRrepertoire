@@ -2,6 +2,8 @@
 
 ###Script for "CD8+ T-cell memory induced by successive SARS-CoV-2 mRNA vaccinations is characterized by clonal replacement" by Aoki et al.
 
+**###Please contact with putibikuro@gmail.com to get the input data for this script.
+**
 ##This program run on docker container. Please pull the following docker images
 #haokimriid/r-base
 #haokimriid/beta_binomial
